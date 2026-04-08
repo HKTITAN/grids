@@ -13,7 +13,7 @@
       'crop-mode-elevated': (isEditing || isExitingCropMode) && isCroppable,
     }"
   >
-    <grid-item
+    <GridItem
       :i="tile.i"
       :x="tile.x"
       :y="tile.y"
@@ -113,14 +113,15 @@
 
         <div v-if="layoutStore.showMetaData" class="meta-data">
           <p class="meta-data__compact">{{ compactMetadata }}</p>
-          <p
-            v-if="layoutStore.showMetaDataVerbose"
-            class="meta-data__verbose"
-            v-for="line in verboseMetadataLines"
-            :key="line"
-          >
-            {{ line }}
-          </p>
+          <template v-if="layoutStore.showMetaDataVerbose">
+            <p
+              v-for="line in verboseMetadataLines"
+              :key="line"
+              class="meta-data__verbose"
+            >
+              {{ line }}
+            </p>
+          </template>
         </div>
 
         <div
@@ -151,7 +152,7 @@
           <TileToolbar :tile="tile" :toolbarRefs="toolbarRefs" />
         </div>
       </div>
-    </grid-item>
+    </GridItem>
   </div>
 </template>
 
@@ -315,9 +316,6 @@ export default defineComponent({
       () => (props.tile.content as any)?.label ?? "",
     );
 
-    const isProfileTile = computed(
-      () => props.tile.content.type === ContentType.PROFILE,
-    );
     const isTileDraggable = computed(() => {
       if (!layoutStore.canEdit || isEditing.value) return false;
       if (isTouchDevice()) return isActivated.value;
@@ -411,8 +409,8 @@ export default defineComponent({
       i: string,
       newH: number,
       newW: number,
-      newHPx: number,
-      newWPx: number,
+      _newHPx: number,
+      _newWPx: number,
     ) => {
       // Called during resize operation - snap to whole grid units for clean resizing
       // Only mutate the store's canonical tiles at the lg (default) breakpoint.

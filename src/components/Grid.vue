@@ -18,7 +18,7 @@
     class="grid-scale-wrapper"
     :style="scaleWrapperStyle"
   >
-    <grid-layout
+    <GridLayout
       ref="gridLayoutRef"
       class="grid-container"
       :layout="displayLayout"
@@ -33,8 +33,8 @@
       :margin="[margin, margin]"
       :style="gridInnerStyle"
     >
-      <grid-tile v-for="tile in displayLayout" :key="tile.i" :tile="tile" />
-    </grid-layout>
+      <GridTile v-for="tile in displayLayout" :key="tile.i" :tile="tile" />
+    </GridLayout>
   </div>
   <div
     v-else
@@ -53,16 +53,16 @@
 <script lang="ts">
 import { computed, onMounted, onUnmounted, ref, nextTick, watch } from "vue";
 import { useRoute } from "vue-router";
-import { GridLayout, GridItem } from "vue3-grid-layout";
+import { GridLayout } from "vue3-grid-layout";
 // import VueGridLayout from "vue-grid-layout-v3";
 import GridTile from "./GridTile.vue";
 import { useLayoutStore } from "@/stores/layout";
 import { type Tile, type Breakpoint } from "@/types/Tile";
 
 export default {
+  name: "GridCanvas",
   components: {
     GridLayout,
-    GridItem,
     GridTile,
   },
   props: {

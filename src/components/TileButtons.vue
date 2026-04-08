@@ -100,7 +100,6 @@ import EmbedIcon from "./icons/EmbedIcon.vue";
 import ProfileTileIcon from "./icons/ProfileTileIcon.vue";
 import MapIcon from "./icons/MapIcon.vue";
 import CampfireIcon from "./icons/CampfireIcon.vue";
-import RPGIcon from "./icons/RPGIcon.vue";
 
 export default {
   components: {
@@ -115,7 +114,6 @@ export default {
     ProfileTileIcon,
     MapIcon,
     CampfireIcon,
-    RPGIcon,
   },
   setup() {
     const themeStore = useThemeStore();
@@ -275,18 +273,6 @@ export default {
       // Creates a disconnected roadmap tile; the owner connects Notion from inside the tile
       const roadmapContent = createTileContent(ContentType.ROADMAP_FEED, {});
       layoutStore.addTile(roadmapContent);
-    };
-
-    const addOtherElement = () => {
-      let link = prompt(
-        "More tile types coming soon! Any others you might be expecting to see?"
-      );
-      if (link) {
-        const linkContent = createTileContent(ContentType.LINK, {
-          src: link,
-        });
-        layoutStore.addTile(linkContent);
-      }
     };
 
     const updateMetaData = () => {

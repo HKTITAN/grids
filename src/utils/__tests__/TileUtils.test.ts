@@ -31,7 +31,6 @@ import type {
   CampfireContent,
   RPGContent,
   EmbedContent,
-  VideoContent,
 } from '@/types/TileContent'
 
 // TileUtils imports useThemeStore at module level but never calls it in the
