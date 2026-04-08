@@ -83,18 +83,25 @@ watch(() => props.show, (newShow) => {
   color: var(--color-text-primary);
 }
 
-.toast-enter-active,
+.toast-enter-active {
+  transition:
+    opacity var(--duration-normal) var(--easing-smooth),
+    transform var(--duration-slow) var(--easing-spring);
+}
+
 .toast-leave-active {
-  transition: all 0.3s var(--easing-smooth);
+  transition:
+    opacity var(--duration-fast) var(--easing-ease-in),
+    transform var(--duration-fast) var(--easing-ease-in);
 }
 
 .toast-enter-from {
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(-24px) scale(0.95);
 }
 
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-12px) scale(0.98);
 }
 </style>

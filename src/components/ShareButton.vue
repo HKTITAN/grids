@@ -50,7 +50,9 @@ const handleShare = async () => {
   background: none;
   cursor: pointer;
   color: var(--color-text-primary);
-  transition: all var(--duration-fast) var(--easing-smooth);
+  transition:
+    background-color var(--duration-fast) var(--easing-smooth),
+    transform var(--duration-fast) var(--easing-spring);
   padding: 0;
   border: none;
   line-height: 0;
@@ -61,6 +63,11 @@ const handleShare = async () => {
     .share-icon {
       color: var(--color-figma-purple);
     }
+  }
+
+  &:active {
+    transform: scale(0.88);
+    transition-duration: var(--duration-instant);
   }
 }
 

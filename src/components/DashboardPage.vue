@@ -416,14 +416,22 @@ h1 {
   font-size: var(--font-size-md);
   font-weight: var(--font-weight-medium);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--easing-smooth);
+  transition:
+    all var(--duration-fast) var(--easing-smooth),
+    transform var(--duration-fast) var(--easing-spring);
 }
 
 .new-grid-button:hover {
   background-color: var(--color-base-34);
   border-color: var(--color-content-default);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.new-grid-button:active {
+  transform: translateY(1px) scale(0.97);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  transition-duration: var(--duration-instant);
 }
 
 .new-grid-button svg {
