@@ -78,12 +78,17 @@
 import { ref } from "vue";
 import { useLayoutStore } from "@/stores/layout";
 import { ContentType } from "@/types/TileContent";
-import { createTileContent, createTileContentFromEmbedUrl } from "@/utils/TileUtils";
+import {
+  createTileContent,
+  createTileContentFromEmbedUrl,
+  isSafeHttpUrlForEmbed,
+} from "@/utils/TileUtils";
 import { useFileUpload } from "@/composables/useFileUpload";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/firebase";
 import { useThemeStore } from "@/stores/theme";
 import { computed } from "vue";
+import { useToastStore } from "@/stores/toast";
 import AddLinkModal from "./AddLinkModal.vue";
 import AddEmbedModal from "./AddEmbedModal.vue";
 import AddMapModal from "./AddMapModal.vue";
@@ -117,6 +122,7 @@ export default {
     const isDarkMode = computed(() => themeStore.isDarkMode);
 
     const layoutStore = useLayoutStore();
+    const toastStore = useToastStore();
     const imageInput = ref<HTMLInputElement | null>(null);
     const { uploadFileOptimistic } = useFileUpload();
 
@@ -236,6 +242,10 @@ export default {
 
     const handleAddEmbed = (link: string) => {
       closeEmbedModal();
+      if (!isSafeHttpUrlForEmbed(link)) {
+        toastStore.addToast("Enter a valid http(s) embed URL", "error");
+        return;
+      }
       const content = createTileContentFromEmbedUrl(link);
       layoutStore.addTile(content);
     };

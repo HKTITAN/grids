@@ -1,4 +1,3 @@
-import { useThemeStore } from "@/stores/theme";
 import { type Tile } from "@/types/Tile";
 import {
   ContentType,
@@ -30,16 +29,32 @@ function ensureUrlHasProtocol(url: string): string {
     : `https://${url}`;
 }
 
-function makeDefaultDoc(text: string): string {
-  return JSON.stringify({
-    type: "doc",
-    content: [
-      {
-        type: "paragraph",
-        content: [{ type: "text", text }],
-      },
-    ],
-  });
+/** Only http(s) embeds; blocks javascript:, data:, protocol-relative //, etc. */
+export function isSafeHttpUrlForEmbed(raw: string): boolean {
+  const t = raw.trim();
+  if (!t) return false;
+  const lower = t.toLowerCase();
+  if (lower.startsWith("//")) return false;
+  if (
+    lower.startsWith("javascript:") ||
+    lower.startsWith("data:") ||
+    lower.startsWith("vbscript:")
+  ) {
+    return false;
+  }
+  const withProto = ensureUrlHasProtocol(t);
+  try {
+    const u = new URL(withProto);
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+export function toSafeHttpUrl(raw: string): string {
+  const trimmed = raw.trim();
+  if (!isSafeHttpUrlForEmbed(trimmed)) return "";
+  return ensureUrlHasProtocol(trimmed);
 }
 
 export function isDirectImageUrl(src: string): boolean {
@@ -229,6 +244,9 @@ export function createTileContentFromEmbedUrl(src: string): TileContent {
   }
 
   const formatted = ensureUrlHasProtocol(urlToCheck);
+  if (!isSafeHttpUrlForEmbed(urlToCheck)) {
+    return createTileContent(ContentType.EMBED, { src: "" });
+  }
 
   // Check for YouTube URLs first
   const youtubeData = parseYouTubeUrl(formatted);
@@ -304,7 +322,7 @@ function extractYouTubeVideoId(parsedUrl: URL): string | null {
 }
 
 function normalizeEmbedSrc(src: string): string {
-  const formatted = ensureUrlHasProtocol(src.trim());
+  const formatted = toSafeHttpUrl(src);
   if (!formatted) return formatted;
 
   try {
@@ -577,7 +595,7 @@ function getLinkData(url: string) {
     const link = formattedUrl;
 
     return { domain, faviconUrl, link };
-  } catch (error) {
+  } catch {
     return {};
   }
 }

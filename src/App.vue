@@ -15,7 +15,11 @@
 
     <!-- Main Content Area -->
     <div class="main-content" :class="{ 'has-left-nav': isAuthenticated }">
-      <router-view />
+      <router-view v-slot="{ Component }">
+        <Transition name="page" mode="out-in">
+          <component :is="Component" :key="route.path" />
+        </Transition>
+      </router-view>
     </div>
 
     <!-- Global bottom-left buttons (Share, Discord, UserMenu, GridMenu) -->
@@ -145,5 +149,28 @@ onUnmounted(() => {
 
 .w-fit {
   width: fit-content;
+}
+
+/* Route transition — fast, subtle fade + lift */
+.page-enter-active {
+  transition:
+    opacity var(--duration-normal) var(--easing-smooth),
+    transform var(--duration-normal) var(--easing-smooth);
+}
+
+.page-leave-active {
+  transition:
+    opacity var(--duration-fast) var(--easing-ease-in),
+    transform var(--duration-fast) var(--easing-ease-in);
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

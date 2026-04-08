@@ -88,5 +88,19 @@ body.theme-dark,
 body {
   background-color: var(--color-content-background);
   color: var(--color-text-primary);
-  transition: background-color var(--transition-normal), color var(--transition-normal);
+  transition:
+    background-color var(--duration-slow) var(--easing-smooth),
+    color var(--duration-slow) var(--easing-smooth);
+}
+
+/* Propagate theme transition smoothly to all themed elements */
+body.theme-transitioning,
+body.theme-transitioning * {
+  transition:
+    background-color var(--duration-slow) var(--easing-smooth),
+    color var(--duration-slow) var(--easing-smooth),
+    border-color var(--duration-slow) var(--easing-smooth),
+    box-shadow var(--duration-slow) var(--easing-smooth),
+    fill var(--duration-slow) var(--easing-smooth),
+    stroke var(--duration-slow) var(--easing-smooth) !important;
 }

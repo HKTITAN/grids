@@ -11,12 +11,14 @@
       @change.stop="addBackgroundImage"
     />
     <iframe
-      v-if="layoutStore.currentLayout?.backgroundEmbed"
+      v-if="safeBackgroundEmbedSrc"
       style="width: 100%; height: 100%; position: fixed; top: 0; z-index: 0"
       scrolling="no"
-      :src="layoutStore.currentLayout?.backgroundImageSrc"
+      :src="safeBackgroundEmbedSrc"
       frameborder="no"
       loading="lazy"
+      referrerpolicy="no-referrer"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
       allowtransparency="true"
       allowfullscreen="true"
     >
@@ -106,6 +108,7 @@ import { useDynamicFavicon } from "@/composables/useDynamicFavicon";
 import { useDragAndPaste } from "@/composables/useDragAndPaste";
 import { useFileUpload } from "@/composables/useFileUpload";
 import { useThemeStore } from "@/stores/theme";
+import { isSafeHttpUrlForEmbed } from "@/utils/TileUtils";
 
 // ── Breakpoint switcher placement ────────────────────────────────
 // Change this value to flip between the three UI placements:
@@ -159,6 +162,13 @@ export default defineComponent({
       };
     });
 
+    const safeBackgroundEmbedSrc = computed(() => {
+      const src = layoutStore.currentLayout?.backgroundImageSrc ?? "";
+      return layoutStore.currentLayout?.backgroundEmbed && isSafeHttpUrlForEmbed(src)
+        ? src
+        : "";
+    });
+
     // Dynamic page title with grid name
     const gridName = computed(() => layoutStore.currentLayout?.name);
     usePageTitle(gridName, '|');
@@ -194,7 +204,7 @@ export default defineComponent({
     const embedBackground = () => {
       if (!layoutStore.canEdit) return;
       const link = prompt("Please enter an embed URL");
-      if (link) {
+      if (link && isSafeHttpUrlForEmbed(link)) {
         layoutStore.addBackgroundImage(link, true);
       }
     };
@@ -250,6 +260,7 @@ export default defineComponent({
       addBackgroundImage,
       selectImage,
       embedBackground,
+      safeBackgroundEmbedSrc,
       confirmDelete,
       imageInput,
       layoutContainer,
@@ -344,6 +355,16 @@ export default defineComponent({
   }
   50% {
     transform: translateY(-8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .drag-overlay {
+    transition: none;
+  }
+
+  .drag-overlay .drag-message svg {
+    animation: none;
   }
 }
 </style>

@@ -472,5 +472,17 @@ describe('createTileContentFromEmbedUrl', () => {
       const content = createTileContentFromEmbedUrl('example.com/some-page') as EmbedContent
       expect(content.src).toMatch(/^https:\/\//)
     })
+
+    it('rejects dangerous javascript: urls as embeddable content', () => {
+      const content = createTileContentFromEmbedUrl('javascript:alert(1)') as EmbedContent
+      expect(content.type).toBe(ContentType.EMBED)
+      expect(content.src).toBe('')
+    })
+
+    it('rejects protocol-relative urls as embeddable content', () => {
+      const content = createTileContentFromEmbedUrl('//evil.example/embed') as EmbedContent
+      expect(content.type).toBe(ContentType.EMBED)
+      expect(content.src).toBe('')
+    })
   })
 })

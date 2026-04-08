@@ -663,13 +663,23 @@ export const useLayoutStore = defineStore("layout", {
     getCookieValue(name: string): string | null {
       const cookies = document.cookie.split("; ");
       const cookie = cookies.find((row) => row.startsWith(`${name}=`));
-      return cookie ? cookie.split("=")[1] : null;
+      if (!cookie) return null;
+      const raw = cookie.slice(name.length + 1);
+      try {
+        return decodeURIComponent(raw);
+      } catch {
+        return raw;
+      }
     },
 
     setCookieValue(name: string, value: string, days = 365) {
       const expires = new Date();
       expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-      document.cookie = `${name}=${value}; expires=${expires.toUTCString()}; path=/`;
+      const secure =
+        typeof window !== "undefined" && window.location.protocol === "https:"
+          ? "; Secure"
+          : "";
+      document.cookie = `${name}=${encodeURIComponent(value)}; expires=${expires.toUTCString()}; path=/; SameSite=Lax${secure}`;
     },
 
     // Save the current layout.

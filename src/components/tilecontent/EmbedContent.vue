@@ -8,9 +8,11 @@
       v-else
       class="embed-frame"
       scrolling="no"
-      :src="content.src"
+      :src="sanitizedSrc"
       frameborder="no"
       loading="lazy"
+      referrerpolicy="no-referrer"
+      sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
       allowfullscreen="true"
     >
@@ -31,6 +33,18 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const sanitizedSrc = computed(() => {
+      const src = props.content.src;
+      if (!src) return '';
+      try {
+        const url = new URL(src);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') return '';
+        return url.toString();
+      } catch {
+        return '';
+      }
+    });
+
     const isDirectImage = computed(() => {
       const src = props.content.src;
       if (!src) return false;
@@ -80,6 +94,7 @@ export default defineComponent({
     });
 
     return {
+      sanitizedSrc,
       isDirectImage,
       isDirectVideo,
     };

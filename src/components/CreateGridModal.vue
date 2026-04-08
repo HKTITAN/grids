@@ -1,22 +1,24 @@
 <template>
-  <div v-if="show" class="modal-overlay" @click="handleClose">
-    <div class="modal-content" @click.stop>
-      <h3>Create New Grid</h3>
-      <input
-        ref="gridNameInput"
-        v-model="gridName"
-        type="text"
-        placeholder="Enter grid name..."
-        class="grid-name-input"
-        @keyup.enter="handleCreate"
-        @keyup.esc="handleClose"
-      />
-      <div class="modal-actions">
-        <button @click="handleClose" class="cancel-button">Cancel</button>
-        <button @click="handleCreate" class="create-button" :disabled="!gridName.trim()">Create Grid</button>
+  <Transition name="modal">
+    <div v-if="show" class="modal-overlay" @click="handleClose">
+      <div class="modal-content" @click.stop>
+        <h3>Create New Grid</h3>
+        <input
+          ref="gridNameInput"
+          v-model="gridName"
+          type="text"
+          placeholder="Enter grid name..."
+          class="grid-name-input"
+          @keyup.enter="handleCreate"
+          @keyup.esc="handleClose"
+        />
+        <div class="modal-actions">
+          <button @click="handleClose" class="cancel-button">Cancel</button>
+          <button @click="handleCreate" class="create-button" :disabled="!gridName.trim()">Create Grid</button>
+        </div>
       </div>
     </div>
-  </div>
+  </Transition>
 </template>
 
 <script setup>
@@ -61,21 +63,11 @@ const handleCreate = () => {
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  animation: fadeIn 0.2s ease-out;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
 }
 
 .modal-content {
@@ -88,17 +80,53 @@ const handleCreate = () => {
   width: 90%;
   max-width: 500px;
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: slideUpSpring 0.4s var(--easing-spring);
 }
 
-@keyframes slideUpSpring {
+/* Transition: enter */
+.modal-enter-active {
+  transition: opacity var(--duration-normal) var(--easing-smooth);
+}
+
+.modal-enter-active .modal-content {
+  animation: modalContentIn var(--duration-slow) var(--easing-spring);
+}
+
+.modal-enter-from {
+  opacity: 0;
+}
+
+/* Transition: leave */
+.modal-leave-active {
+  transition: opacity var(--duration-fast) var(--easing-ease-in);
+}
+
+.modal-leave-active .modal-content {
+  animation: modalContentOut var(--duration-fast) var(--easing-ease-in) forwards;
+}
+
+.modal-leave-to {
+  opacity: 0;
+}
+
+@keyframes modalContentIn {
   from {
     opacity: 0;
-    transform: translateY(40px) scale(0.95);
+    transform: translateY(24px) scale(0.96);
   }
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes modalContentOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
   }
 }
 
@@ -119,13 +147,17 @@ const handleCreate = () => {
   border: var(--tile-border-width) solid var(--color-tile-stroke);
   border-radius: var(--radius-md);
   outline: none;
-  transition: all var(--duration-fast) var(--easing-smooth);
+  transition:
+    border-color var(--duration-fast) var(--easing-smooth),
+    background-color var(--duration-fast) var(--easing-smooth),
+    box-shadow var(--duration-fast) var(--easing-smooth);
   margin-bottom: var(--spacing-lg);
 }
 
 .grid-name-input:focus {
   border-color: var(--color-content-default);
   background-color: var(--color-tile-background);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-content-default) 15%, transparent);
 }
 
 .grid-name-input::placeholder {
@@ -146,7 +178,9 @@ const handleCreate = () => {
   font-weight: var(--font-weight-medium);
   border-radius: var(--radius-md);
   cursor: pointer;
-  transition: all var(--duration-fast) var(--easing-smooth);
+  transition:
+    all var(--duration-fast) var(--easing-smooth),
+    transform var(--duration-fast) var(--easing-spring);
   border: var(--tile-border-width) solid var(--color-tile-stroke);
 }
 
@@ -168,6 +202,11 @@ const handleCreate = () => {
 .create-button:hover:not(:disabled) {
   background-color: var(--color-content-low);
   transform: translateY(-1px);
+}
+
+.create-button:active:not(:disabled) {
+  transform: translateY(1px) scale(0.97);
+  transition-duration: var(--duration-instant);
 }
 
 .create-button:disabled {

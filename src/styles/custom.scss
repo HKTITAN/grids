@@ -156,7 +156,10 @@ body.theme-dark {
   border-radius: var(--tile-border-radius);
   padding: var(--tile-padding);
   backdrop-filter: blur(20px);
-  transition: box-shadow var(--transition-normal);
+  transition:
+    box-shadow var(--duration-normal) var(--easing-smooth),
+    transform var(--duration-normal) var(--easing-spring),
+    border-color var(--duration-fast) var(--easing-smooth);
   
   &:hover {
     box-shadow: var(--shadow-tile-hover);
@@ -223,6 +226,10 @@ button {
   border-radius: 16px;
   cursor: pointer;
   font-size: 1rem;
+  transition:
+    transform var(--duration-fast) var(--easing-spring),
+    filter var(--duration-fast) var(--easing-smooth),
+    box-shadow var(--duration-fast) var(--easing-smooth);
 
   &.small {
     padding: 5px 10px;
@@ -243,7 +250,29 @@ button {
     color: #fff;
   }
 
-  &:hover {
+  &:hover:not(:disabled) {
     filter: brightness(0.9);
+    transform: translateY(-1px);
   }
+
+  &:active:not(:disabled) {
+    transform: translateY(1px) scale(0.97);
+    filter: brightness(0.85);
+    transition-duration: var(--duration-instant);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+@keyframes gentlePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }

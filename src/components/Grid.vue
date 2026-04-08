@@ -1,5 +1,17 @@
 <template>
-  <p v-if="layoutStore.isLoading">Loading layout...</p>
+  <div
+    v-if="layoutStore.isLoading"
+    class="grid-status-card"
+    data-testid="grid-status"
+    aria-live="polite"
+  >
+    <div class="grid-status-card__eyebrow">Grid</div>
+    <h2 class="grid-status-card__title">Loading your grid</h2>
+    <p class="grid-status-card__body">
+      We are arranging tiles and restoring the latest layout.
+    </p>
+    <div class="grid-status-card__pulse" aria-hidden="true"></div>
+  </div>
   <div
     v-else-if="displayLayout.length"
     ref="scaleWrapperRef"
@@ -24,7 +36,18 @@
       <grid-tile v-for="tile in displayLayout" :key="tile.i" :tile="tile" />
     </grid-layout>
   </div>
-  <p v-else>No tiles yet.</p>
+  <div
+    v-else
+    class="grid-status-card grid-status-card--empty"
+    data-testid="grid-status"
+  >
+    <div class="grid-status-card__eyebrow">Start here</div>
+    <h2 class="grid-status-card__title">Nothing here yet</h2>
+    <p class="grid-status-card__body">
+      Start adding tiles to shape this space. Links, media, notes, and embeds all
+      snap into place here.
+    </p>
+  </div>
 </template>
 
 <script lang="ts">
@@ -533,6 +556,88 @@ export default {
 <style scoped>
 .grid-scale-wrapper {
   overflow: hidden;
+}
+
+.grid-status-card {
+  width: min(520px, calc(100vw - 32px));
+  margin: clamp(72px, 12vh, 132px) auto 0;
+  padding: clamp(22px, 4vw, 30px);
+  border-radius: var(--radius-lg);
+  border: var(--tile-border-width) solid var(--color-tile-stroke);
+  background:
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--color-tile-background) 96%, transparent) 0%,
+      color-mix(in srgb, var(--color-base-8) 65%, var(--color-tile-background)) 100%
+    );
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(18px);
+  animation: gridStatusLift var(--duration-slow) var(--easing-spring);
+}
+
+.grid-status-card__eyebrow {
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-content-default);
+}
+
+.grid-status-card__title {
+  margin: 0;
+  font-size: clamp(1.4rem, 2vw, 1.85rem);
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+
+.grid-status-card__body {
+  margin: 12px 0 0;
+  max-width: 42ch;
+  font-size: var(--font-size-md);
+  line-height: 1.6;
+  color: var(--color-content-high);
+}
+
+.grid-status-card__pulse {
+  width: 120px;
+  height: 6px;
+  margin-top: 18px;
+  border-radius: var(--radius-full);
+  background:
+    linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--color-content-low) 55%, transparent) 0%,
+      var(--color-text-primary) 50%,
+      color-mix(in srgb, var(--color-content-low) 55%, transparent) 100%
+    );
+  background-size: 200% 100%;
+  animation: gridStatusPulse 1.8s var(--easing-smooth) infinite;
+  opacity: 0.75;
+}
+
+.grid-status-card--empty .grid-status-card__pulse {
+  display: none;
+}
+
+@keyframes gridStatusLift {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes gridStatusPulse {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
 }
 
 .vue-grid-layout {

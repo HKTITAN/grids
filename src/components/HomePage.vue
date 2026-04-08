@@ -113,12 +113,30 @@ usePageTitle(pageTitle);
   width: 100%;
   max-width: 860px;
   text-align: center;
+  animation: home-hero-in 720ms var(--easing-smooth, cubic-bezier(0.22, 1, 0.36, 1)) both;
+}
+
+@keyframes home-hero-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-landing__hero {
+    animation: none;
+  }
 }
 
 .home-landing__title {
   font-size: clamp(2.25rem, 6vw, 3.5rem);
   font-weight: var(--font-weight-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
   margin-bottom: var(--spacing-md);
 }
 
@@ -163,14 +181,14 @@ usePageTitle(pageTitle);
   text-decoration: none;
   box-shadow: var(--shadow-md);
   transition:
-    transform var(--duration-fast) var(--easing-smooth),
-    box-shadow var(--duration-fast) var(--easing-smooth),
-    filter var(--duration-fast) var(--easing-smooth),
+    transform 180ms var(--easing-smooth, cubic-bezier(0.22, 1, 0.36, 1)),
+    box-shadow 180ms var(--easing-smooth, cubic-bezier(0.22, 1, 0.36, 1)),
+    filter 180ms var(--easing-smooth, cubic-bezier(0.22, 1, 0.36, 1)),
     background-color var(--duration-normal) var(--easing-smooth);
 }
 
 .home-landing__cta:hover {
-  /* transform: translateY(-1px); */
+  transform: translateY(-1px);
   background-color: var(--color-base-34);
   box-shadow: var(--shadow-lg);
   filter: brightness(1.02);
@@ -179,6 +197,12 @@ usePageTitle(pageTitle);
 .home-landing__cta:active {
   transform: translateY(0);
   box-shadow: var(--shadow-md);
+  transition-duration: 80ms;
+}
+
+.home-landing__cta:focus-visible {
+  outline: 2px solid var(--color-content-high);
+  outline-offset: 3px;
 }
 
 .home-landing__cta--ghost {
@@ -190,6 +214,12 @@ usePageTitle(pageTitle);
 
 .home-landing__cta--ghost:hover {
   text-decoration: underline;
+}
+
+.home-landing__cta--ghost:focus-visible {
+  outline: 2px solid var(--color-content-high);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
 }
 
 .home-landing__discord-link {

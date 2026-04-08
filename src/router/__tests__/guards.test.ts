@@ -15,6 +15,7 @@
  */
 
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { sanitizeRedirectPath } from '@/utils/safeRedirect'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -53,8 +54,11 @@ async function runGuard(
 
   // Already logged in trying to access /login
   if (to.path === '/login' && user) {
-    const redirect = to.query.redirect
-    next(redirect && redirect.length > 0 ? redirect : '/dashboard')
+    const redirect =
+      typeof to.query.redirect === 'string'
+        ? sanitizeRedirectPath(to.query.redirect)
+        : null
+    next(redirect ?? '/dashboard')
     return
   }
 
@@ -116,6 +120,12 @@ describe('Router auth guard', () => {
       const to = makeRoute('/login', false, { redirect: '/grid/some-grid-id' })
       await runGuard(to, authedUser, 'myslug', next)
       expect(next).toHaveBeenCalledWith('/grid/some-grid-id')
+    })
+
+    it('ignores unsafe redirect query values (open redirect)', async () => {
+      const to = makeRoute('/login', false, { redirect: '//evil.com/phish' })
+      await runGuard(to, authedUser, 'myslug', next)
+      expect(next).toHaveBeenCalledWith('/dashboard')
     })
 
     it('falls back to /dashboard when redirect param is empty string', async () => {

@@ -1,13 +1,21 @@
 import { ref, onMounted, onUnmounted, type Ref } from "vue";
 import { useFileUpload } from "./useFileUpload";
 import { useLayoutStore } from "@/stores/layout";
-import { createTileContent, createTileContentFromEmbedUrl, isDirectImageUrl, isDirectVideoUrl } from "@/utils/TileUtils";
-import { ContentType } from "@/types/TileContent";
+import {
+  createTileContent,
+  createTileContentFromEmbedUrl,
+  isDirectImageUrl,
+  isDirectVideoUrl,
+  isSafeHttpUrlForEmbed,
+} from "@/utils/TileUtils";
+import { ContentType, type EmbedContent } from "@/types/TileContent";
 import { httpsCallable } from "firebase/functions";
 import { functions } from "@/firebase";
+import { useToastStore } from "@/stores/toast";
 
 export function useDragAndPaste(containerRef: Ref<HTMLElement | null>) {
   const layoutStore = useLayoutStore();
+  const toastStore = useToastStore();
   const { uploadFileOptimistic } = useFileUpload();
   const isDraggingOver = ref(false);
   let dragCounter = 0;
@@ -71,6 +79,10 @@ export function useDragAndPaste(containerRef: Ref<HTMLElement | null>) {
           // Paste is an iframe embed code — route through embed URL handler
           event.preventDefault();
           const embedContent = createTileContentFromEmbedUrl(trimmedText);
+          if (embedContent.type === ContentType.EMBED && !(embedContent as EmbedContent).src) {
+            toastStore.addToast("Paste a valid http(s) embed URL.", "error");
+            return;
+          }
           layoutStore.addTile(embedContent);
         } else if (isUrl(trimmedText)) {
           // Paste is a URL — create a link tile
@@ -178,6 +190,10 @@ export function useDragAndPaste(containerRef: Ref<HTMLElement | null>) {
         return true;
       }
 
+      if (text.startsWith("//")) {
+        return false;
+      }
+
       // Bare domain heuristic: must contain a dot and parse as a valid URL
       // when we prepend https://
       if (text.includes(".")) {
@@ -207,6 +223,10 @@ export function useDragAndPaste(containerRef: Ref<HTMLElement | null>) {
           detectedContent.type === ContentType.IMAGE ||
           detectedContent.type === ContentType.VIDEO) {
         layoutStore.addTile(detectedContent);
+        return;
+      }
+      if (detectedContent.type === ContentType.EMBED && !(detectedContent as EmbedContent).src) {
+        toastStore.addToast("Paste a valid http(s) embed URL.", "error");
         return;
       }
     }
@@ -254,6 +274,14 @@ export function useDragAndPaste(containerRef: Ref<HTMLElement | null>) {
           detectedContent.type === ContentType.IMAGE ||
           detectedContent.type === ContentType.VIDEO) {
         layoutStore.addTile(detectedContent);
+        return;
+      }
+      if (
+        !isDirectImageUrl(formattedUrl) &&
+        !isDirectVideoUrl(formattedUrl) &&
+        !isSafeHttpUrlForEmbed(trimmed)
+      ) {
+        toastStore.addToast("Drop a valid http(s) URL.", "error");
         return;
       }
     }

@@ -440,6 +440,16 @@ h1 {
   padding: var(--spacing-xl) 0;
   font-size: var(--font-size-lg);
   color: var(--color-content-default);
+  animation: fadeIn var(--duration-slow) var(--easing-smooth);
+}
+
+.loading {
+  animation: fadeIn var(--duration-slow) var(--easing-smooth), breathe 2s ease-in-out infinite;
+}
+
+@keyframes breathe {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 .grid-list {

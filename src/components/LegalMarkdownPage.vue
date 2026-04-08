@@ -3,6 +3,7 @@
     <div class="legal-container">
       <div v-if="isLoading" class="legal-status">Loading…</div>
       <div v-else-if="error" class="legal-status legal-status--error">{{ error }}</div>
+      <!-- eslint-disable-next-line vue/no-v-html -- Markdown is converted with markdownToHtml (escaped + allowlist) -->
       <div v-else class="legal-content" v-html="html"></div>
     </div>
   </div>
@@ -35,9 +36,9 @@ onMounted(async () => {
 
     const md = await res.text();
     html.value = markdownToHtml(md);
-  } catch (e: any) {
+  } catch (e: unknown) {
     console.error('Failed to load legal content:', e);
-    error.value = e?.message ?? 'Could not load content.';
+    error.value = e instanceof Error ? e.message : 'Could not load content.';
   } finally {
     isLoading.value = false;
   }
@@ -58,6 +59,24 @@ onMounted(async () => {
   border-radius: var(--radius-lg);
   background: var(--color-tile-background);
   border: var(--tile-border-width) solid var(--color-tile-stroke);
+  animation: legal-fade-in 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes legal-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .legal-container {
+    animation: none;
+  }
 }
 
 .legal-status {
@@ -122,5 +141,11 @@ onMounted(async () => {
 .legal-content :deep(a) {
   color: var(--color-content-high);
   text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 150ms ease, text-decoration-color 150ms ease;
+}
+
+.legal-content :deep(a:hover) {
+  color: color-mix(in srgb, var(--color-content-high) 88%, var(--color-text-primary));
 }
 </style>

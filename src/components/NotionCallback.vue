@@ -88,11 +88,15 @@ export default defineComponent({
       let layoutId = "";
       let tileId = "";
       let redirectUri = "";
+      let oauthResultKey = "grids.notion-oauth-result";
       try {
         const state = JSON.parse(decodeURIComponent(stateRaw ?? "{}"));
         layoutId = state.layoutId ?? "";
         tileId = state.tileId ?? "";
         redirectUri = state.redirectUri ?? "";
+        if (typeof state.oauthNonce === "string" && state.oauthNonce.length > 0) {
+          oauthResultKey = `grids.notion-oauth-result.${state.oauthNonce}`;
+        }
       } catch {
         status.value = "error";
         errorMessage.value = "Invalid OAuth state. Please try again.";
@@ -122,11 +126,11 @@ export default defineComponent({
 
         status.value = "success";
 
-        // Write result to localStorage so the opener can pick it up via a storage event
+        // Write result to a nonce-keyed localStorage entry so the opener can poll it
         // or polling. postMessage is unreliable here because the popup navigated away
         // from the opener's origin during the OAuth flow, which clears window.opener
         // in some browsers.
-        localStorage.setItem("notion-oauth-result", JSON.stringify({ error: null, ts: Date.now() }));
+        localStorage.setItem(oauthResultKey, JSON.stringify({ error: null, ts: Date.now() }));
 
         // Small delay so the user sees the success state before the window closes
         setTimeout(() => window.close(), 1200);
@@ -134,7 +138,7 @@ export default defineComponent({
         status.value = "error";
         errorMessage.value = err?.message || "Failed to connect Notion. Please try again.";
         // Write error to localStorage so the opener can display it
-        localStorage.setItem("notion-oauth-result", JSON.stringify({ error: errorMessage.value, ts: Date.now() }));
+        localStorage.setItem(oauthResultKey, JSON.stringify({ error: errorMessage.value, ts: Date.now() }));
       }
     });
 

@@ -87,6 +87,7 @@ import SlugClaimModal from '@/components/SlugClaimModal.vue';
 import { usePageTitle } from '@/composables/usePageTitle';
 import { useLayoutStore } from '@/stores/layout';
 import { getUserProfile } from '@/services/UserProfileService';
+import { sanitizeRedirectPath } from '@/utils/safeRedirect';
 import {
   signInWithPopup,
   GoogleAuthProvider,
@@ -123,11 +124,13 @@ const isEmailValid = computed(() => {
  * Returns the redirect path or null if slug modal should be shown
  */
 const getPostAuthRedirect = async (): Promise<string | null> => {
-  const redirect = route.query.redirect;
-  
-  // If there's an explicit redirect query param, honor it
-  if (typeof redirect === 'string' && redirect.length > 0) {
-    return redirect;
+  const redirectRaw = route.query.redirect;
+  const safeRedirect =
+    typeof redirectRaw === 'string' ? sanitizeRedirectPath(redirectRaw) : null;
+
+  // If there's an explicit redirect query param, honor it (same-origin paths only)
+  if (safeRedirect) {
+    return safeRedirect;
   }
   
   try {
@@ -337,6 +340,24 @@ const handleSlugClaimed = () => {
   background-color: color-mix(in srgb, var(--color-tile-background) 86%, transparent);
   border: var(--tile-border-width) solid var(--color-tile-stroke);
   backdrop-filter: blur(20px);
+  animation: auth-panel-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes auth-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-container {
+    animation: none;
+  }
 }
 
 .auth-header {
@@ -375,6 +396,10 @@ input:focus {
   border-color: var(--color-content-high);
 }
 
+input:focus-visible {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-content-high) 35%, transparent);
+}
+
 button {
   width: 100%;
   padding: var(--spacing-sm) var(--spacing-md);
@@ -403,6 +428,24 @@ button:hover {
   justify-content: center;
   background: var(--color-content-background);
   color: var(--color-text-primary);
+  transition:
+    transform 160ms var(--easing-smooth),
+    box-shadow 160ms var(--easing-smooth),
+    background-color 160ms var(--easing-smooth);
+}
+
+.google-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--color-text-primary) 12%, transparent);
+}
+
+.google-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.google-btn:focus-visible {
+  outline: 2px solid var(--color-content-high);
+  outline-offset: 3px;
 }
 
 .google-btn i {

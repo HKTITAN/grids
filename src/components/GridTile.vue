@@ -175,6 +175,7 @@ import {
   getOptionComponent,
   createTileContent,
   createTileContentFromEmbedUrl,
+  isSafeHttpUrlForEmbed,
 } from "@/utils/TileUtils";
 import { ContentType, type LinkContent } from "@/types/TileContent";
 import { httpsCallable } from "firebase/functions";
@@ -509,6 +510,7 @@ export default defineComponent({
         case "embed": {
           const url = prompt("Please enter an embed URL");
           if (!url) return;
+          if (!isSafeHttpUrlForEmbed(url)) return;
           const content = createTileContentFromEmbedUrl(url);
           layoutStore.setTileContent(props.tile.i, content);
           break;

@@ -1,19 +1,26 @@
 // Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
+import { initializeApp, type FirebaseOptions } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getAnalytics } from "firebase/analytics";
 import { getFunctions } from "firebase/functions";
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
-  apiKey: "AIzaSyD1SapZGG49zaIfBv3QqZWxobQmws263zQ",
-  authDomain: "grids-one.firebaseapp.com",
-  projectId: "grids-one",
-  storageBucket: "grids-one.firebasestorage.app",
-  messagingSenderId: "598562210148",
-  appId: "1:598562210148:web:6bfd6ef229fcd9fd5b3a71",
-  measurementId: "G-8Q904761XS"
+
+function requireEnv(key: string): string {
+  const value = import.meta.env[key];
+  if (!value) {
+    throw new Error(`Missing required environment variable: ${key}. Check your .env file.`);
+  }
+  return value;
+}
+
+const firebaseConfig: FirebaseOptions = {
+  apiKey: requireEnv("VITE_FIREBASE_API_KEY"),
+  authDomain: requireEnv("VITE_FIREBASE_AUTH_DOMAIN"),
+  projectId: requireEnv("VITE_FIREBASE_PROJECT_ID"),
+  storageBucket: requireEnv("VITE_FIREBASE_STORAGE_BUCKET"),
+  messagingSenderId: requireEnv("VITE_FIREBASE_MESSAGING_SENDER_ID"),
+  appId: requireEnv("VITE_FIREBASE_APP_ID"),
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || undefined,
 };
 
 // Initialize Firebase

@@ -11,6 +11,7 @@ import NotionCallback from '@/components/NotionCallback.vue';
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { getUserProfile } from '@/services/UserProfileService';
 import posthog from 'posthog-js';
+import { sanitizeRedirectPath } from '@/utils/safeRedirect';
 
 // Define routes
 const routes = [
@@ -95,8 +96,11 @@ router.beforeEach(async (to, from, next) => {
 
   // If already authenticated, redirect from login to app
   if (to.path === '/login' && user) {
-    const redirect = typeof to.query.redirect === 'string' ? to.query.redirect : null;
-    next(redirect && redirect.length > 0 ? redirect : '/dashboard');
+    const redirect =
+      typeof to.query.redirect === 'string'
+        ? sanitizeRedirectPath(to.query.redirect)
+        : null;
+    next(redirect ?? '/dashboard');
     return;
   }
 
@@ -133,7 +137,7 @@ router.beforeEach(async (to, from, next) => {
 });
 
 // Track page views with PostHog
-router.afterEach((to) => {
+router.afterEach((_to) => {
   if (import.meta.env.VITE_POSTHOG_KEY) {
     posthog.capture('$pageview', {
       $current_url: window.location.href,

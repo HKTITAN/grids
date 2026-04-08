@@ -16,9 +16,22 @@ const renderInline = (input: string): string => {
   // Inline code
   out = out.replace(/`([^`]+?)`/g, (_, code) => `<code>${escapeHtml(code)}</code>`);
 
-  // Links
+  // Links — only allow http(s) and relative paths to avoid javascript: / data: in href
   out = out.replace(/\[([^\]]+?)\]\(([^)]+?)\)/g, (_, text, href) => {
-    const safeHref = escapeAttribute(String(href));
+    const raw = String(href).trim();
+    let safeHref = '#';
+    try {
+      if (raw.startsWith('/') && !raw.startsWith('//')) {
+        safeHref = escapeAttribute(raw);
+      } else {
+        const u = new URL(raw, 'https://example.invalid');
+        if (u.protocol === 'https:' || u.protocol === 'http:') {
+          safeHref = escapeAttribute(u.href);
+        }
+      }
+    } catch {
+      safeHref = '#';
+    }
     const safeText = escapeHtml(String(text));
     return `<a href="${safeHref}" target="_blank" rel="noopener noreferrer">${safeText}</a>`;
   });
@@ -46,7 +59,7 @@ const parseMarkdown = (markdown: string): string => {
 
   let html = '';
   let paragraphBuffer: string[] = [];
-  let listStack: ListType[] = [];
+  const listStack: ListType[] = [];
   let blockquoteBuffer: string[] = [];
 
   const flushParagraph = () => {

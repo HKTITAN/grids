@@ -54,9 +54,13 @@ export default {
     const isDarkMode = computed(() => themeStore.isDarkMode);
 
     const toggleTheme = () => {
+      document.body.classList.add('theme-transitioning');
       const newThemeId = themeStore.currentThemeId === 'dark' ? 'light' : 'dark';
       themeStore.setTheme(newThemeId);
       layoutStore.setGridTheme(newThemeId);
+      setTimeout(() => {
+        document.body.classList.remove('theme-transitioning');
+      }, 500);
     };
 
     return {

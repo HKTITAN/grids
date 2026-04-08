@@ -117,6 +117,7 @@ import {
 import { db } from "@/firebase";
 import { useLayoutStore } from "@/stores/layout";
 import type { ChatContent, ChatMessage } from "@/types/TileContent";
+import { isOwnerMessage as isOwnerMessageForOwner } from "@/components/tilecontent/chatOwnership";
 
 export default defineComponent({
   components: {
@@ -169,11 +170,8 @@ export default defineComponent({
       isOwner.value ? "Write a message.." : "Message the owner..",
     );
 
-    const isOwnerMessage = (message: ChatMessage) => {
-      if (!ownerId.value) return false;
-      if (!message.authorId) return true;
-      return message.authorId === ownerId.value;
-    };
+    const isOwnerMessage = (message: ChatMessage) =>
+      isOwnerMessageForOwner(message, ownerId.value);
 
     // Check if we should show a date separator before this message
     const shouldShowDateSeparator = (message: ChatMessage, index: number) => {

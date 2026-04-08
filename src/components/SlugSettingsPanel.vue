@@ -6,7 +6,7 @@
         <p class="section-description">
           Your unique handle for sharing your grid. 
           <span v-if="userSlug" class="current-url">
-            Current: <a :href="`/${userSlug}`" target="_blank">grids.so/{{ userSlug }}</a>
+            Current: <a :href="`/${userSlug}`" target="_blank" rel="noopener noreferrer">grids.so/{{ userSlug }}</a>
           </span>
         </p>
       </div>

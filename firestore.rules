@@ -45,8 +45,11 @@ service cloud.firestore {
       // Publicly readable — contains only non-sensitive fields (profilePhotoUrl)
       allow read: if true;
 
-      // Only the profile owner may write their own public profile
-      allow write: if request.auth != null && request.auth.uid == userId;
+      // Only the profile owner may write their own public profile.
+      // Restrict to known-safe fields to prevent storing arbitrary data.
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.data.keys().hasOnly(["profilePhotoUrl", "displayName", "updatedAt"]);
     }
 
     match /layouts/{layoutId} {
@@ -58,13 +61,14 @@ service cloud.firestore {
       match /tiles/{tileId}/messages/{messageId} {
         allow read: if true;
 
-        allow create: if exists(/databases/$(database)/documents/layouts/$(layoutId))
+        allow create: if request.auth != null
+          && exists(/databases/$(database)/documents/layouts/$(layoutId))
           && request.resource.data.keys().hasOnly(["text", "createdAt", "authorId"])
           && request.resource.data.text is string
           && request.resource.data.text.size() > 0
           && request.resource.data.text.size() <= 2000
           && request.resource.data.createdAt != null
-          && (!("authorId" in request.resource.data) || request.resource.data.authorId is string);
+          && (!("authorId" in request.resource.data) || request.resource.data.authorId == request.auth.uid);
 
         allow update, delete: if isLayoutOwner(layoutId);
       }

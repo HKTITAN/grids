@@ -243,6 +243,7 @@ import { getAuth, onAuthStateChanged } from "firebase/auth";
 import { collection, onSnapshot, query, where, type Unsubscribe } from "firebase/firestore";
 import { httpsCallable } from "firebase/functions";
 import { useRouter } from "vue-router";
+import { v4 as uuidv4 } from "uuid";
 import { db, functions } from "@/firebase";
 import { useLayoutStore } from "@/stores/layout";
 import type { RoadmapFeedContent, RoadmapFilterableType, RoadmapItem, RoadmapQueryFilter, RoadmapStatus } from "@/types/TileContent";
@@ -654,14 +655,18 @@ export default defineComponent({
       // Embed redirectUri in state so the callback page can pass the exact same value
       // back to the Cloud Function — Notion requires it to match the authorize request
       // when multiple redirect URIs are registered on the integration.
-      const state = encodeURIComponent(JSON.stringify({ layoutId: layoutId.value, tileId, redirectUri: callbackUri }));
+      const oauthNonce = uuidv4();
+      const oauthResultKey = `grids.notion-oauth-result.${oauthNonce}`;
+      const state = encodeURIComponent(
+        JSON.stringify({ layoutId: layoutId.value, tileId, redirectUri: callbackUri, oauthNonce }),
+      );
       const notionAuthUrl =
         `https://api.notion.com/v1/oauth/authorize` +
         `?client_id=${clientId}&response_type=code&owner=user` +
         `&redirect_uri=${encodeURIComponent(callbackUri)}&state=${state}`;
 
       // Clear any stale result from a previous OAuth attempt before opening the popup
-      localStorage.removeItem("notion-oauth-result");
+      localStorage.removeItem(oauthResultKey);
 
       const popup = window.open(notionAuthUrl, "notion-oauth", "width=600,height=700");
 
@@ -674,7 +679,7 @@ export default defineComponent({
         if (handled) return;
         handled = true;
         clearInterval(pollResult);
-        localStorage.removeItem("notion-oauth-result");
+        localStorage.removeItem(oauthResultKey);
         isConnecting.value = false;
         if (error) { connectError.value = error; return; }
         // Mark the tile as connected (token stored server-side) so the settings
@@ -687,7 +692,7 @@ export default defineComponent({
       };
 
       const pollResult = setInterval(() => {
-        const raw = localStorage.getItem("notion-oauth-result");
+        const raw = localStorage.getItem(oauthResultKey);
         if (raw) {
           try {
             const result = JSON.parse(raw);

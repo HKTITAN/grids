@@ -87,7 +87,6 @@ export class FirestoreLayoutService implements LayoutService {
   // Save a new layout
   async saveLayout(layout: Layout): Promise<void> {
     try {
-      console.log(layout);
       const docRef = doc(db, "layouts", layout.id);
       const payload = sanitizeFirestoreValue({
         userId: layout.userId,

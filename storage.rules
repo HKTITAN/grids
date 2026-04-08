@@ -2,69 +2,60 @@ rules_version = '2';
 
 service firebase.storage {
   match /b/{bucket}/o {
-    // Helper function to check file size limit (500 MB = 524,288,000 bytes)
     function isFileSizeValid() {
-      return request.resource.size <= 524288000;
+      return request.resource.size <= 524288000; // 500 MB
     }
 
-    // Helper function to check if user has storage quota available (5 GB = 5,368,709,120 bytes)
-    function hasStorageQuota(userId) {
-      // Check if user document exists, if not assume 0 usage (will be created by Cloud Function)
-      let userDocPath = /databases/(default)/documents/users/$(userId);
-      let currentUsage = firestore.exists(userDocPath) 
-        ? (firestore.get(userDocPath).data.keys().hasAny(['storageUsed']) 
-            ? firestore.get(userDocPath).data.storageUsed 
-            : 0)
-        : 0;
-      
-      let newUsage = currentUsage + request.resource.size;
-      return newUsage <= 5368709120;
+    function isImageContentType() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function isVideoContentType() {
+      return request.resource.contentType.matches('video/.*');
+    }
+
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+
+    function isPublished() {
+      return resource.metadata.published == 'true';
     }
 
     match /users/{userId}/images/{imageId} {
-      // Allow read if the image's metadata indicates it's published
-      allow read: if resource.metadata.published == 'true' || 
-                  (request.auth != null && request.auth.uid == userId);
+      allow read: if isPublished() || isOwner(userId);
 
-      // Allow write only if authenticated, owns the resource, and file size is valid
-      // Note: hasStorageQuota check removed because it can fail if user document doesn't exist yet
-      // TODO: Re-enable quota checking once we ensure user documents are created on signup
-      allow write: if request.auth != null 
-                   && request.auth.uid == userId
-                   && isFileSizeValid();
-      
-      // Allow update and delete only by the authenticated user who owns the layout
-      allow update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if isOwner(userId)
+                    && isFileSizeValid()
+                    && isImageContentType();
+      allow update: if isOwner(userId)
+                    && isFileSizeValid()
+                    && isImageContentType();
+      allow delete: if isOwner(userId);
     }
 
     match /users/{userId}/link-images/{imageId} {
-      // Allow read if the image's metadata indicates it's published
-      allow read: if resource.metadata.published == 'true' || 
-                  (request.auth != null && request.auth.uid == userId);
+      allow read: if isPublished() || isOwner(userId);
 
-      // Allow write only if authenticated, owns the resource, and file size is valid
-      // Note: hasStorageQuota check removed because it can fail if user document doesn't exist yet
-      allow write: if request.auth != null 
-                   && request.auth.uid == userId
-                   && isFileSizeValid();
-      
-      // Allow update and delete only by the authenticated user who owns the layout
-      allow update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if isOwner(userId)
+                    && isFileSizeValid()
+                    && isImageContentType();
+      allow update: if isOwner(userId)
+                    && isFileSizeValid()
+                    && isImageContentType();
+      allow delete: if isOwner(userId);
     }
 
     match /users/{userId}/videos/{videoId} {
-      // Allow read if the video's metadata indicates it's published
-      allow read: if resource.metadata.published == 'true' || 
-                  (request.auth != null && request.auth.uid == userId);
+      allow read: if isPublished() || isOwner(userId);
 
-      // Allow write only if authenticated, owns the resource, and file size is valid
-      // Note: hasStorageQuota check removed because it can fail if user document doesn't exist yet
-      allow write: if request.auth != null 
-                   && request.auth.uid == userId
-                   && isFileSizeValid();
-      
-      // Allow update and delete only by the authenticated user who owns the layout
-      allow update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if isOwner(userId)
+                    && isFileSizeValid()
+                    && isVideoContentType();
+      allow update: if isOwner(userId)
+                    && isFileSizeValid()
+                    && isVideoContentType();
+      allow delete: if isOwner(userId);
     }
   }
 }
